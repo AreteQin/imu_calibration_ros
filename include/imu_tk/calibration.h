@@ -81,45 +81,45 @@ namespace imu_tk
  * 
  * X'' = T*K*X
 */
-template < typename _T > class CalibratedTriad_
+template < typename T > class CalibratedTriad_
 {
 public:
   /** @brief Basic "default" constructor: without any parameter, it initilizes the calibration parameter with 
    *         default values (zero scaling factors and biases, identity misalignment matrix)
    */
-  CalibratedTriad_( const _T &mis_yz = _T(0), const _T &mis_zy = _T(0), const _T &mis_zx = _T(0), 
-                    const _T &mis_xz = _T(0), const _T &mis_xy = _T(0), const _T &mis_yx = _T(0), 
-                    const _T &s_x = _T(1),    const _T &s_y = _T(1),    const _T &s_z = _T(1), 
-                    const _T &b_x = _T(0),    const _T &b_y = _T(0),    const _T &b_z  = _T(0) );
+  CalibratedTriad_( const T &mis_yz = T(0), const T &mis_zy = T(0), const T &mis_zx = T(0),
+                    const T &mis_xz = T(0), const T &mis_xy = T(0), const T &mis_yx = T(0),
+                    const T &s_x = T(1),    const T &s_y = T(1),    const T &s_z = T(1),
+                    const T &b_x = T(0),    const T &b_y = T(0),    const T &b_z  = T(0) );
  
   ~CalibratedTriad_(){};
                
-  inline _T misYZ() const { return -mis_mat_(0,1); };
-  inline _T misZY() const { return mis_mat_(0,2); };
-  inline _T misZX() const { return -mis_mat_(1,2); };
-  inline _T misXZ() const { return mis_mat_(1,0); };
-  inline _T misXY() const { return -mis_mat_(2,0); };
-  inline _T misYX() const { return mis_mat_(2,1); };
+  inline T misYZ() const { return -mis_mat_(0,1); };
+  inline T misZY() const { return mis_mat_(0,2); };
+  inline T misZX() const { return -mis_mat_(1,2); };
+  inline T misXZ() const { return mis_mat_(1,0); };
+  inline T misXY() const { return -mis_mat_(2,0); };
+  inline T misYX() const { return mis_mat_(2,1); };
 
-  inline _T scaleX() const { return scale_mat_(0,0); };
-  inline _T scaleY() const { return scale_mat_(1,1); };
-  inline _T scaleZ() const { return scale_mat_(2,2); };
+  inline T scaleX() const { return scale_mat_(0,0); };
+  inline T scaleY() const { return scale_mat_(1,1); };
+  inline T scaleZ() const { return scale_mat_(2,2); };
       
-  inline _T biasX() const { return bias_vec_(0); };
-  inline _T biasY() const { return bias_vec_(1); };
-  inline _T biasZ() const { return bias_vec_(2); };
+  inline T biasX() const { return bias_vec_(0); };
+  inline T biasY() const { return bias_vec_(1); };
+  inline T biasZ() const { return bias_vec_(2); };
   
-  inline const Eigen::Matrix< _T, 3 , 3>& getMisalignmentMatrix() const { return mis_mat_; };
-  inline const Eigen::Matrix< _T, 3 , 3>& getScaleMatrix() const { return scale_mat_; };
-  inline const Eigen::Matrix< _T, 3 , 1>& getBiasVector() const { return bias_vec_; };
+  inline const Eigen::Matrix< T, 3 , 3>& getMisalignmentMatrix() const { return mis_mat_; };
+  inline const Eigen::Matrix< T, 3 , 3>& getScaleMatrix() const { return scale_mat_; };
+  inline const Eigen::Matrix< T, 3 , 1>& getBiasVector() const { return bias_vec_; };
     
-  inline void setScale( const Eigen::Matrix< _T, 3 , 1> &s_vec ) 
+  inline void setScale( const Eigen::Matrix< T, 3 , 1> &s_vec )
   { 
     scale_mat_(0,0) = s_vec(0); scale_mat_(1,1) = s_vec(1);  scale_mat_(2,2) = s_vec(2); 
     update();
   };
   
-  inline void setBias( const Eigen::Matrix< _T, 3 , 1> &b_vec ) 
+  inline void setBias( const Eigen::Matrix< T, 3 , 1> &b_vec )
   { 
     bias_vec_ = b_vec;
     update();
@@ -143,7 +143,7 @@ public:
   /** @brief Normalize a raw data X by correcting the misalignment and the scale,
    *         i.e., by applying the equation  X'' = T*K*X
    */
-  inline Eigen::Matrix< _T, 3 , 1> normalize( const Eigen::Matrix< _T, 3 , 1> &raw_data ) const
+  inline Eigen::Matrix< T, 3 , 1> normalize( const Eigen::Matrix< T, 3 , 1> &raw_data ) const
   {
     return ms_mat_*raw_data;
   };
@@ -151,16 +151,16 @@ public:
   /** @brief Normalize a raw data X by correcting the misalignment and the scale,
    *         i.e., by applying the equation  X'' = T*K*X
    */
-  inline TriadData_<_T> normalize( const TriadData_<_T> &raw_data ) const
+  inline TriadData_<T> normalize( const TriadData_<T> &raw_data ) const
   {
-    return TriadData_<_T>( raw_data.timestamp(), normalize( raw_data.data()) );
+    return TriadData_<T>( raw_data.timestamp(), normalize( raw_data.data()) );
   };
   
   /** @brief Normalize a raw data X by removing the biases and 
    *         correcting the misalignment and the scale, 
    *         i.e., by applying the equation  X' = T*K*(X - B)
    */
-  inline Eigen::Matrix< _T, 3 , 1> unbiasNormalize( const Eigen::Matrix< _T, 3 , 1> &raw_data ) const
+  inline Eigen::Matrix< T, 3 , 1> unbiasNormalize( const Eigen::Matrix< T, 3 , 1> &raw_data ) const
   {
     return ms_mat_*(raw_data - bias_vec_); 
   };
@@ -169,21 +169,21 @@ public:
    *         correcting the misalignment and the scale, 
    *         i.e., by applying the equation  X' = T*K*(X - B)
    */
-  inline TriadData_<_T> unbiasNormalize( const TriadData_<_T> &raw_data ) const
+  inline TriadData_<T> unbiasNormalize( const TriadData_<T> &raw_data ) const
   {
-    return TriadData_<_T>( raw_data.timestamp(), unbiasNormalize( raw_data.data()) );
+    return TriadData_<T>( raw_data.timestamp(), unbiasNormalize( raw_data.data()) );
   };
   
   /** @brief Remove the biases from a raw data */
-  inline Eigen::Matrix< _T, 3 , 1> unbias( const Eigen::Matrix< _T, 3 , 1> &raw_data ) const
+  inline Eigen::Matrix< T, 3 , 1> unbias( const Eigen::Matrix< T, 3 , 1> &raw_data ) const
   {
     return raw_data - bias_vec_; 
   };
   
   /** @brief Remove the biases from a raw data */
-  inline TriadData_<_T> unbias( const TriadData_<_T> &raw_data ) const
+  inline TriadData_<T> unbias( const TriadData_<T> &raw_data ) const
   {
-    return TriadData_<_T>( raw_data.timestamp(), unbias( raw_data.data()) );
+    return TriadData_<T>( raw_data.timestamp(), unbias( raw_data.data()) );
   };
   
 private:
@@ -193,13 +193,13 @@ private:
   void update();
   
   /** @brief Misalignment matrix */
-  Eigen::Matrix< _T, 3 , 3> mis_mat_;
+  Eigen::Matrix< T, 3 , 3> mis_mat_;
   /** @brief Scale matrix */
-  Eigen::Matrix< _T, 3 , 3> scale_mat_;
+  Eigen::Matrix< T, 3 , 3> scale_mat_;
   /** @brief Bias vector */
-  Eigen::Matrix< _T, 3 , 1> bias_vec_;
+  Eigen::Matrix< T, 3 , 1> bias_vec_;
   /** @brief Misalignment * scale matrix */
-  Eigen::Matrix< _T, 3 , 3> ms_mat_;
+  Eigen::Matrix< T, 3 , 3> ms_mat_;
 };
 
 typedef CalibratedTriad_<double> CalibratedTriad;
@@ -221,7 +221,7 @@ template <typename _T> std::ostream& operator<<(std::ostream& os,
  * In: Proceedings of the IEEE International Conference on Robotics and Automation (ICRA 2014), 
  * May 31 - June 7, 2014 Hong Kong, China, Page(s): 3042 - 3049 
  */
-template <typename _T> class MultiPosCalibration_
+template <typename T> class MultiPosCalibration_
 {
 public:
   
@@ -232,19 +232,19 @@ public:
   /** @brief Provides the magnitude of the gravitational filed 
    *         used in the calibration (i.e., the gravity measured in
    *         the place where the calibration dataset has been acquired) */
-  _T gravityMagnitede() const { return g_mag_; };
+  T gravityMagnitede() const { return g_mag_; };
 
   /** @brief Provides the duration in seconds of the initial static interval */
-  _T initStaticIntervalDuration() const { return init_interval_duration_; };
+  T initStaticIntervalDuration() const { return init_interval_duration_; };
   
   /** @brief Provides the number of data samples to be extracted from each detected static intervals */
   int intarvalsNumSamples() const { return interval_n_samples_; };
   
   /** @brief Provides the accelerometers initial guess calibration parameters */
-  const CalibratedTriad_<_T>& initAccCalibration(){ return init_acc_calib_; };
+  const CalibratedTriad_<T>& initAccCalibration(){ return init_acc_calib_; };
   
   /** @brief Provides the gyroscopes initial guess calibration parameters */
-  const CalibratedTriad_<_T>& initGyroCalibration(){ return init_gyro_calib_; };
+  const CalibratedTriad_<T>& initGyroCalibration(){ return init_gyro_calib_; };
   
   /** @brief True if the accelerometers calibration is obtained using the mean
    *         accelerations of each static interval instead of all samples */
@@ -253,7 +253,7 @@ public:
   /** @brief Provides the (fixed) data period used in the gyroscopes integration. 
    *         If this period is less than 0, the gyroscopes timestamps are used
    *         in place of this period. */  
-  _T gyroDataPeriod() const{ return gyro_dt_; };
+  T gyroDataPeriod() const{ return gyro_dt_; };
   
   /** @brief True if the gyroscopes biases are estimated along with the calibration 
    *         parameters. If false, the gyroscopes biases (computed in the initial static
@@ -270,20 +270,20 @@ public:
    *         To find your magnitude of the gravitational filed, 
    *         take a look for example to https://www.wolframalpha.com
    */
-  void setGravityMagnitude( _T g ){ g_mag_ = g; };
+  void setGravityMagnitude( T g ){ g_mag_ = g; };
   
   /** @brief Set the duration in seconds of the initial static interval. Default 30 seconds. */
-  _T setInitStaticIntervalDuration( _T duration ) { init_interval_duration_ = duration; };
+  T setInitStaticIntervalDuration( T duration ) { init_interval_duration_ = duration; };
   
   /** @brief Set the number of data samples to be extracted from each detected static intervals.
    *         Default is 100.  */
   int setIntarvalsNumSamples( int num ) { interval_n_samples_ = num; };
   
   /** @brief Set the accelerometers initial guess calibration parameters */  
-  void setInitAccCalibration( CalibratedTriad_<_T> &init_calib ){ init_acc_calib_ = init_calib; };
+  void setInitAccCalibration( CalibratedTriad_<T> &init_calib ){ init_acc_calib_ = init_calib; };
   
   /** @brief Set the gyroscopes initial guess calibration parameters */
-  void setInitGyroCalibration( CalibratedTriad_<_T> &init_calib ){ init_gyro_calib_ = init_calib; };
+  void setInitGyroCalibration( CalibratedTriad_<T> &init_calib ){ init_gyro_calib_ = init_calib; };
   
   /** @brief If the parameter enabled is true, the accelerometers calibration is obtained 
    *         using the mean accelerations of each static interval instead of all samples.
@@ -295,7 +295,7 @@ public:
    *         If this period is less than 0, the gyroscopes timestamps are used
    *         in place of this period. Default is -1.
    */  
-  void setGyroDataPeriod( _T dt ){ gyro_dt_ = dt; };
+  void setGyroDataPeriod( T dt ){ gyro_dt_ = dt; };
   
   /** @brief If the parameter enabled is true, the gyroscopes biases are estimated along
    *         with the calibration parameters. If false, the gyroscopes biases 
@@ -311,7 +311,7 @@ public:
    * @param acc_samples Acceleremoters data vector, ordered by increasing timestamps,
    *                    collected at the sensor data rate. 
    */
-  bool calibrateAcc( const std::vector< TriadData_<_T> > &acc_samples );
+  [[noreturn]] bool calibrateAcc( const std::vector< TriadData_<T> > &acc_samples );
   
   /** @brief Estimate the calibration parameters for both the acceleremoters 
    *         and the gyroscopes triads (see CalibratedTriad_) using the
@@ -323,37 +323,37 @@ public:
    *                     collected in parallel with the acceleations 
    *                     at the sensor data rate.
    */
-  bool calibrateAccGyro( const std::vector< TriadData_<_T> > &acc_samples, 
-                         const std::vector< TriadData_<_T> > &gyro_samples );
+  bool calibrateAccGyro( const std::vector< TriadData_<T> > &acc_samples,
+                         const std::vector< TriadData_<T> > &gyro_samples );
 
   /** @brief Provide the calibration parameters for the acceleremoters triad (it should be called after
    *         calibrateAcc() or calibrateAccGyro() ) */
-  const CalibratedTriad_<_T>& getAccCalib() const  { return acc_calib_; };
+  const CalibratedTriad_<T>& getAccCalib() const  { return acc_calib_; };
   /** @brief Provide the calibration parameters for the gyroscopes triad (it should be called after
    *         calibrateAccGyro() ). */
-  const CalibratedTriad_<_T>& getGyroCalib() const  { return gyro_calib_; };
+  const CalibratedTriad_<T>& getGyroCalib() const  { return gyro_calib_; };
   
   /** @brief Provide the calibrated acceleremoters data vector (it should be called after
    *         calibrateAcc() or calibrateAccGyro() ) */
-  const std::vector< TriadData_<_T> >& getCalibAccSamples() const { return calib_acc_samples_; };
+  const std::vector< TriadData_<T> >& getCalibAccSamples() const { return calib_acc_samples_; };
 
   /** @brief Provide the calibrated gyroscopes data vector (it should be called after
    *         calibrateAccGyro() ) */
-  const std::vector< TriadData_<_T> >& getCalibGyroSamples() const { return calib_gyro_samples_; };
+  const std::vector< TriadData_<T> >& getCalibGyroSamples() const { return calibrated_gyro_samples_; };
   
 private:
   
-  _T g_mag_;
+  T g_mag_;
   const int min_num_intervals_;
-  _T init_interval_duration_;
-  int interval_n_samples_;
+  T init_interval_duration_;
+  int interval_n_samples_; // the minimum samples in a static interval
   bool acc_use_means_;
-  _T gyro_dt_;
+  T gyro_dt_;
   bool optimize_gyro_bias_;
   std::vector< DataInterval > min_cost_static_intervals_;
-  CalibratedTriad_<_T> init_acc_calib_, init_gyro_calib_;
-  CalibratedTriad_<_T> acc_calib_, gyro_calib_;
-  std::vector< TriadData_<_T> > calib_acc_samples_, calib_gyro_samples_;
+  CalibratedTriad_<T> init_acc_calib_, init_gyro_calib_;
+  CalibratedTriad_<T> acc_calib_, gyro_calib_;
+  std::vector< TriadData_<T> > calib_acc_samples_, calibrated_gyro_samples_;
   
   bool verbose_output_;
 };

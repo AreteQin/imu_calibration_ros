@@ -37,24 +37,24 @@ namespace imu_tk
 {
 /** @brief Simple container for a data item (e.g., timestamp + x, y, z accelerometers or
  *         gyroscopes reading */
-template <typename _T > class TriadData_
+template <typename T > class TriadData_
 {
 public:
   /** @brief Construct an uninitialized TriadData_ object */
   TriadData_() {};
  
   /** @brief Construct a TriadData_ object from a timestamp and three values */  
-  TriadData_ ( _T timestamp, _T x, _T y, _T z ) :
+  TriadData_ ( T timestamp, T x, T y, T z ) :
     timestamp_ ( timestamp ),
     data_ ( x, y, z ) {};
 
   /** @brief Construct an TriadData_ object from a timestamp and an Eigen vector */  
-  TriadData_ ( _T timestamp, const Eigen::Matrix< _T, 3, 1> &data ) :
+  TriadData_ ( T timestamp, const Eigen::Matrix< T, 3, 1> &data ) :
     timestamp_ ( timestamp ),
     data_ ( data ) {};
 
   /** @brief Construct an TriadData_ object from a timestamp and an array with 3 elements */      
-  TriadData_ ( _T timestamp, const _T *data ) :
+  TriadData_ ( T timestamp, const T *data ) :
     timestamp_ ( timestamp ),
     data_ ( data[0], data[1], data[2] ) {};
 
@@ -75,7 +75,7 @@ public:
    * Supporting coercion using member template constructor */
   template< typename _newT >
     TriadData_( const TriadData_<_newT> &o ) :
-    timestamp_(_T(o.timestamp())), data_(o.data().template cast<_T>())
+    timestamp_(T(o.timestamp())), data_(o.data().template cast<T>())
   {};
   
   /** @brief Copy assignment operator 
@@ -84,41 +84,41 @@ public:
   template< typename _newT >
     TriadData_ & operator = (const TriadData_<_newT> &o )
   {
-    timestamp_ = _T(o.timestamp());
-    data_ = o.data().template cast<_T>();
+    timestamp_ = T(o.timestamp());
+    data_ = o.data().template cast<T>();
     return *this;
   };
     
   ~TriadData_() {};
 
-  inline const _T& timestamp() const
+  inline const T& timestamp() const
   {
     return timestamp_;
   };
-  inline const Eigen::Matrix< _T, 3, 1>& data() const
+  inline const Eigen::Matrix< T, 3, 1>& data() const
   {
     return data_;
   };
-  inline const _T& operator() ( int index ) const
+  inline const T& operator() ( int index ) const
   {
     return data_[index];
   };
-  inline const _T& x() const
+  inline const T& x() const
   {
     return data_[0];
   };
-  inline const _T& y() const
+  inline const T& y() const
   {
     return data_[1];
   };
-  inline const _T& z() const
+  inline const T& z() const
   {
     return data_[2];
   };
 
 private:
-  Eigen::Matrix< _T, 3, 1> data_;
-  _T timestamp_;
+  Eigen::Matrix< T, 3, 1> data_;
+  T timestamp_;
 };
 
 typedef TriadData_<double> TriadData;
@@ -288,7 +288,7 @@ template <typename _T>
   *        (input vector intervals) extract from the input signal 
   *        (samples) the first interval_n_samps samples, and store them 
   *        in the output vector extracted_samples. If the flag only_means
-  *        is set to true, extract for each interval only the local mean, computed 
+  *        is set to true, only extract the local mean for each interval, computed
   *        in interval with size at least interval_n_samps samples.
   *        Only intervals with at least interval_n_samps samples are considered.
   * 
@@ -362,29 +362,29 @@ template <typename _T>
   return mean;
 }
 
-template <typename _T>
-  Eigen::Matrix< _T, 3, 1> dataVariance( const std::vector< TriadData_<_T> >& samples, 
+template <typename T>
+  Eigen::Matrix< T, 3, 1> dataVariance( const std::vector< TriadData_<T> >& samples,
                                          const DataInterval& interval )
 {
   DataInterval rev_interval =  checkInterval( samples, interval );
   int n_samp = rev_interval.end_idx - rev_interval.start_idx + 1;
-  Eigen::Matrix< _T, 3, 1> mean = dataMean( samples, rev_interval );
+  Eigen::Matrix< T, 3, 1> mean = dataMean( samples, rev_interval );
   
-  Eigen::Matrix< _T, 3, 1> variance(0, 0, 0);
+  Eigen::Matrix< T, 3, 1> variance(0, 0, 0);
   for( int i = rev_interval.start_idx; i <= rev_interval.end_idx; i++)
   {
-    Eigen::Matrix< _T, 3, 1> diff = samples[i].data() - mean ;
+    Eigen::Matrix< T, 3, 1> diff = samples[i].data() - mean ;
     variance += (diff.array() * diff.array()).matrix();
   }
-  variance /= _T(n_samp - 1);
+  variance /= T(n_samp - 1);
   
   return variance;
 }
 
-template <typename _T>
-  void extractIntervalsSamples ( const std::vector< TriadData_<_T> >& samples, 
+template <typename T>
+  void extractIntervalsSamples ( const std::vector< TriadData_<T> >& samples,
                                  const std::vector< DataInterval >& intervals, 
-                                 std::vector< TriadData_<_T> >& extracted_samples, 
+                                 std::vector< TriadData_<T> >& extracted_samples,
                                  std::vector< DataInterval > &extracted_intervals,
                                  int interval_n_samps, bool only_means )
 {
@@ -417,9 +417,9 @@ template <typename _T>
       {
         DataInterval mean_inerval( intervals[i].start_idx, intervals[i].end_idx );
         // Take the timestamp centered in the interval where the mean is computed
-        _T timestamp = samples[ intervals[i].start_idx + interval_size/2 ].timestamp();
-        Eigen::Matrix< _T, 3, 1> mean_val = dataMean ( samples, mean_inerval );
-        extracted_samples.push_back( TriadData_<_T>(timestamp, mean_val ) );
+        T timestamp = samples[ intervals[i].start_idx + interval_size/2 ].timestamp();
+        Eigen::Matrix< T, 3, 1> mean_val = dataMean ( samples, mean_inerval );
+        extracted_samples.push_back( TriadData_<T>(timestamp, mean_val ) );
       }
       else
       {
@@ -430,8 +430,8 @@ template <typename _T>
   }
 }
 
-template <typename _T> void decomposeRotation( const Eigen::Matrix< _T, 3, 3> &rot_mat,
-                                               Eigen::Matrix< _T, 3, 1> &rpy_rot_vec )
+template <typename T> void decomposeRotation( const Eigen::Matrix< T, 3, 3> &rot_mat,
+                                               Eigen::Matrix< T, 3, 1> &rpy_rot_vec )
 {
   rpy_rot_vec(0) = atan2(rot_mat(2,1), rot_mat(2,2));
   rpy_rot_vec(1) = atan2(-rot_mat(2,0), sqrt(rot_mat(2,1)*rot_mat(2,1) + rot_mat(2,2)*rot_mat(2,2)));

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
   
   
   CalibratedTriad init_acc_calib, init_gyro_calib;
-  init_acc_calib.setBias( Vector3d(32768, 32768, 32768) );
+  init_acc_calib.setBias( Vector3d(0.04222, 0.03844, 0.05533) ); // why these values? units? TODO
   init_gyro_calib.setScale( Vector3d(1.0/6258.0, 1.0/6258.0, 1.0/6258.0) );
   
   MultiPosCalibration mp_calib;
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
   mp_calib.setInitStaticIntervalDuration(50.0);
   mp_calib.setInitAccCalibration( init_acc_calib );
   mp_calib.setInitGyroCalibration( init_gyro_calib );  
-  mp_calib.setGravityMagnitude(9.81744);
+  mp_calib.setGravityMagnitude(9.80616);
   mp_calib.enableVerboseOutput(true);
   mp_calib.enableAccUseMeans(false);
   //mp_calib.setGyroDataPeriod(0.01);
@@ -40,13 +40,13 @@ int main(int argc, char** argv)
   mp_calib.getAccCalib().save("test_imu_acc.calib");
   mp_calib.getGyroCalib().save("test_imu_gyro.calib");
   
-//   for( int i = 0; i < acc_data.size(); i++)
-//   {
-//     cout<<acc_data[i].timestamp()<<" "
-  //         <<acc_data[i].x()<<" "<<acc_data[i].y()<<" "<<acc_data[i].z()<<" "
-  //         <<gyro_data[i].x()<<" "<<gyro_data[i].y()<<" "<<gyro_data[i].z()<<endl;
-//   }
-//   cout<<"Read "<<acc_data.size()<<" tuples"<<endl;
+   for( int i = 0; i < acc_data.size(); i++)
+   {
+     cout<<acc_data[i].timestamp()<<" "
+           <<acc_data[i].x()<<" "<<acc_data[i].y()<<" "<<acc_data[i].z()<<" "
+           <<gyro_data[i].x()<<" "<<gyro_data[i].y()<<" "<<gyro_data[i].z()<<endl;
+   }
+   cout<<"Read "<<acc_data.size()<<" tuples"<<endl;
   
   return 0;
 }
