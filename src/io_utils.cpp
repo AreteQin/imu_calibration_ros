@@ -37,9 +37,9 @@
 
 using namespace std;
 
-template <typename _T>
+template <typename T>
 void imu_tk::importAsciiData ( const char *filename,
-                               vector< TriadData_<_T> > &samples,
+                               vector< TriadData_<T> > &samples,
                                TimestampUnit unit, DatasetType type )
 {
   samples.clear();
@@ -74,7 +74,7 @@ void imu_tk::importAsciiData ( const char *filename,
       else
       {
         ts /= unit;
-        samples.push_back ( TriadData_<_T> ( _T ( ts ), _T ( d[0] ), _T ( d[1] ), _T ( d[2] ) ) );
+        samples.push_back ( TriadData_<T> ( T ( ts ), T ( d[0] ), T ( d[1] ), T ( d[2] ) ) );
       }
       l++;
     }

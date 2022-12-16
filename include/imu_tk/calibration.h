@@ -227,7 +227,7 @@ public:
   
   /** @brief Default constructor: initilizes all the internal members with default values */
   MultiPosCalibration_();
-  ~MultiPosCalibration_(){};
+  ~MultiPosCalibration_()= default;;
   
   /** @brief Provides the magnitude of the gravitational filed 
    *         used in the calibration (i.e., the gravity measured in
