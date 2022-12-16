@@ -311,7 +311,7 @@ public:
    * @param acc_samples Acceleremoters data vector, ordered by increasing timestamps,
    *                    collected at the sensor data rate. 
    */
-  [[noreturn]] bool calibrateAcc( const std::vector< TriadData_<T> > &acc_samples );
+  bool calibrateAcc( const std::vector< TriadData_<T> > &acc_samples );
   
   /** @brief Estimate the calibration parameters for both the acceleremoters 
    *         and the gyroscopes triads (see CalibratedTriad_) using the

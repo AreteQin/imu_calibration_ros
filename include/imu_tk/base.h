@@ -175,16 +175,16 @@ struct DataInterval
    * @param samples Input signal (data samples vector)
    * @param duration Interval duration
    */
-  template <typename _T> 
-    static DataInterval initialInterval( const std::vector< TriadData_<_T> > &samples, 
-                                         _T duration )
+  template <typename T>
+    static DataInterval initialInterval( const std::vector< TriadData_<T> > &samples,
+                                         T duration )
   {
     if( duration <= 0)
       throw std::invalid_argument("Invalid interval duration");
     if( samples.size() < 3 )
       throw std::invalid_argument("Invalid data samples vector");
     
-    _T end_ts = samples[0].timestamp() + duration;
+    T end_ts = samples[0].timestamp() + duration;
     int end_idx;
     if ( end_ts >=  samples[samples.size() - 1].timestamp() ) 
       end_idx = samples.size() - 1;

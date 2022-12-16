@@ -48,22 +48,22 @@ enum DatasetType
   DATASET_COMMA_SEPARATED
 };
 
-template <typename _T> 
+template <typename T>
   void importAsciiData( const char *filename,
-                        std::vector< TriadData_<_T> > &samples, 
+                        std::vector< TriadData_<T> > &samples,
                         TimestampUnit unit = TIMESTAMP_UNIT_USEC,
                         DatasetType type = DATASET_SPACE_SEPARATED );
-template <typename _T> 
+template <typename T>
   void importAsciiData( const char *filename,
-                        std::vector< TriadData_<_T> > &samples0,
-                        std::vector< TriadData_<_T> > &samples1, 
+                        std::vector< TriadData_<T> > &samples0,
+                        std::vector< TriadData_<T> > &samples1,
                         TimestampUnit unit = TIMESTAMP_UNIT_USEC,
                         DatasetType type = DATASET_SPACE_SEPARATED );
-template <typename _T> 
+template <typename T>
   void importAsciiData( const char *filename,
-                        std::vector< TriadData_<_T> > &samples0,
-                        std::vector< TriadData_<_T> > &samples1,
-                        std::vector< TriadData_<_T> > &samples2, 
+                        std::vector< TriadData_<T> > &samples0,
+                        std::vector< TriadData_<T> > &samples1,
+                        std::vector< TriadData_<T> > &samples2,
                         TimestampUnit unit = TIMESTAMP_UNIT_USEC,
                         DatasetType type = DATASET_SPACE_SEPARATED ); 
 }
