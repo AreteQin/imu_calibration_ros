@@ -1,73 +1,239 @@
-project(imu_tk)
-
 cmake_minimum_required(VERSION 3.0.2)
-set(CMAKE_CXX_FLAGS "-std=c++17")
+project(imu_calibration_ros)
 
-cmake_policy(SET CMP0015 NEW)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules) # Add elements to list
 
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Release")
-endif ()
+#set(CMAKE_CXX_FLAGS "-std=c++17")
+#cmake_policy(SET CMP0015 NEW)
 
-if (NOT DEFINED BUILD_IMU_TK_EXAMPLES)
-    set(BUILD_IMU_TK_EXAMPLES "ON")
-endif (NOT DEFINED BUILD_IMU_TK_EXAMPLES)
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++17)
 
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+        geometry_msgs
+        rosbag
+        roscpp
+        sensor_msgs
+        tf2_geometry_msgs
+        tf2_ros
+        )
+
+## System dependencies are found with CMake's conventions
+# find_package(Boost REQUIRED COMPONENTS system)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
+find_package(Glog REQUIRED)
+#find_package(GLUT REQUIRED)
 
-include_directories(./include
-        /usr/include
+## Uncomment this if the package has a setup.py. This macro ensures
+## modules and global scripts declared therein get installed
+## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
+# catkin_python_setup()
+
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+## To declare and build messages, services or actions from within this
+## package, follow these steps:
+## * Let MSG_DEP_SET be the set of packages whose message types you use in
+##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
+## * In the file package.xml:
+##   * add a build_depend tag for "message_generation"
+##   * add a build_depend and a exec_depend tag for each package in MSG_DEP_SET
+##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
+##     but can be declared for certainty nonetheless:
+##     * add a exec_depend tag for "message_runtime"
+## * In this file (CMakeLists.txt):
+##   * add "message_generation" and every package in MSG_DEP_SET to
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * add "message_runtime" and every package in MSG_DEP_SET to
+##     catkin_package(CATKIN_DEPENDS ...)
+##   * uncomment the add_*_files sections below as needed
+##     and list every .msg/.srv/.action file to be processed
+##   * uncomment the generate_messages entry below
+##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
+
+## Generate messages in the 'msg' folder
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
+
+## Generate services in the 'srv' folder
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
+
+## Generate actions in the 'action' folder
+# add_action_files(
+#   FILES
+#   Action1.action
+#   Action2.action
+# )
+
+## Generate added messages and services with any dependencies listed here
+# generate_messages(
+#   DEPENDENCIES
+#   geometry_msgs#   sensor_msgs#   tf2_geometry_msgs
+# )
+
+################################################
+## Declare ROS dynamic reconfigure parameters ##
+################################################
+
+## To declare and build dynamic reconfigure parameters within this
+## package, follow these steps:
+## * In the file package.xml:
+##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
+## * In this file (CMakeLists.txt):
+##   * add "dynamic_reconfigure" to
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * uncomment the "generate_dynamic_reconfigure_options" section below
+##     and list every .cfg file to be processed
+
+## Generate dynamic reconfigure parameters in the 'cfg' folder
+# generate_dynamic_reconfigure_options(
+#   cfg/DynReconf1.cfg
+#   cfg/DynReconf2.cfg
+# )
+
+###################################
+## catkin specific configuration ##
+###################################
+## The catkin_package macro generates cmake config files for your package
+## Declare things to be passed to dependent projects
+## INCLUDE_DIRS: uncomment this if your package contains header files
+## LIBRARIES: libraries you create in this project that dependent projects also need
+## CATKIN_DEPENDS: catkin_packages dependent projects also need
+## DEPENDS: system dependencies of this project that dependent projects also need
+catkin_package(
+        #  INCLUDE_DIRS include
+        #  LIBRARIES imu_calibration_ros
+        #  CATKIN_DEPENDS geometry_msgs rosbag roscpp sensor_msgs tf2_geometry_msgs tf2_ros
+        #  DEPENDS system_lib
+)
+
+###########
+## Build ##
+###########
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+include_directories(
+        ./include
+        ${catkin_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${EIGEN_INCLUDE_DIR}
-        ${CERES_INCLUDE_DIRS})
-
-#Vis3D
-find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-find_package(Eigen3 REQUIRED)
-
-include_directories(${OPENGL_INCLUDE_DIRS}
+        ${CERES_INCLUDE_DIRS}
         ${GLUT_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${EIGEN3_INCLUDE_DIR})
+)
 
-set(IMU_TK_VIS_EXTRA_SOURCES
-        ./src/vis_extra/gl_camera.cpp
-        ./src/vis_extra/opengl_3d_scene.cpp)
-set(IMU_TK_VIS_EXTRA_HEADERS
-        ./include/imu_tk/vis_extra/opengl_3d_scene.h)
+## Declare a C++ library
+# add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/imu_calibration_ros.cpp
+# )
+add_library(imu_tk STATIC
+        src/base.cpp
+#        include/base.h
+#        include/calibration.h
+        src/calibration.cpp
+        src/filters.cpp
+#        include/filters.h
+#        include/integration.h
+        )
 
-qt4_wrap_cpp(IMU_TK_VIS_EXTRA_HEADERS_MOC ${IMU_TK_VIS_EXTRA_HEADERS})
+## Add cmake target dependencies of the library
+## as an example, code may need to be generated before libraries
+## either from message generation or dynamic reconfigure
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-include(${QT_USE_FILE})
-add_definitions(${QT_DEFINITIONS})
+## Declare a C++ executable
+## With catkin_make all packages are built within a single CMake context
+## The recommended prefix ensures that target names across packages don't collide
+# add_executable(${PROJECT_NAME}_node src/imu_calibration_ros_node.cpp)
+add_executable(test_imu_calib apps/test_imu_calib.cpp)
 
-aux_source_directory(./src IMU_TK_CORE_SRC)
-set(IMU_TK_SRC ${IMU_TK_CORE_SRC} ${IMU_TK_VIS_EXTRA_HEADERS_MOC} ${IMU_TK_VIS_EXTRA_SOURCES})
+## Rename C++ executable without prefix
+## The above recommended prefix causes long target names, the following renames the
+## target back to the shorter version for ease of user use
+## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
+# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 
-add_library(imu_tk ${IMU_TK_SRC})
-set_target_properties(imu_tk PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+## Add cmake target dependencies of the executable
+## same as for the library above
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-set(IMU_TK_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE STRING "imu_tk include directories")
-set(IMU_TK_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib CACHE STRING "imu_tk libraries directories")
-set(IMU_TK_LIBS imu_tk ${CERES_LIBRARIES} ${QT_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY}
-        CACHE STRING "imu_tk libraries")
+## Specify libraries to link a library or executable target against
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
+target_link_libraries(test_imu_calib
+        imu_tk
+        ${GLOG_LIBRARIES}
+        ${catkin_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${CERES_LIBRARIES}
+        ${GLUT_LIBRARY})
 
-message("${IMU_TK_LIBS}")
+#############
+## Install ##
+#############
 
-if (BUILD_IMU_TK_EXAMPLES)
+# all install targets should use catkin DESTINATION variables
+# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
-    add_executable(test_imu_calib apps/test_imu_calib.cpp)
-    target_link_libraries(test_imu_calib ${IMU_TK_LIBS})
-    set_target_properties(test_imu_calib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+## Mark executable scripts (Python etc.) for installation
+## in contrast to setup.py, you can choose the destination
+# catkin_install_python(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
+## Mark executables for installation
+## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
+# install(TARGETS ${PROJECT_NAME}_node
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
-    add_executable(test_integration apps/test_integration.cpp)
-    target_link_libraries(test_integration ${IMU_TK_LIBS})
+## Mark libraries for installation
+## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
+# install(TARGETS ${PROJECT_NAME}
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+# )
 
-    set_target_properties(test_integration PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
-endif (BUILD_IMU_TK_EXAMPLES)
+## Mark other files for installation (e.g. launch and bag files, etc.)
+# install(FILES
+#   # myfile1
+#   # myfile2
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_imu_calibration_ros.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)

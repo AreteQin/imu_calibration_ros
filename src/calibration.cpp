@@ -1,35 +1,35 @@
-/* 
+/*
  * imu_tk - Inertial Measurement Unit Toolkit
- * 
+ *
  *  Copyright (c) 2014, Alberto Pretto <pretto@diag.uniroma1.it>
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- * 
+ *
  *  1. Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- * 
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
  *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
  *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "imu_tk/calibration.h"
-#include "imu_tk/filters.h"
-#include "imu_tk/integration.h"
-#include "imu_tk/visualization.h"
+#include "calibration.h"
+#include "filters.h"
+#include "integration.h"
+//#include "imu_tk/visualization.h"
 
 #include <limits>
 #include <iostream>
@@ -38,6 +38,12 @@
 using namespace imu_tk;
 using namespace Eigen;
 using namespace std;
+
+template
+class MultiPosCalibration_<double>;
+
+template
+class MultiPosCalibration_<float>;
 
 template<typename T1>
 struct MultiPosAccResidual {
@@ -146,17 +152,21 @@ MultiPosCalibration_<T>::MultiPosCalibration_() :
 
 template<typename T>
 bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &acc_samples) {
-    cout << "Accelerometers calibration: calibrating..." << endl;
 
     min_cost_static_intervals_.clear();
     calib_acc_samples_.clear();
     calibrated_gyro_samples_.clear();
 
     int n_samps = acc_samples.size();
+    LOG(INFO) << "Accelerometers calibration: " << n_samps << " measurements" << endl;
 
     DataInterval init_static_interval = DataInterval::initialInterval(acc_samples, init_interval_duration_);
+    LOG(INFO)<<"Start index: "<<init_static_interval.start_idx<<endl;
+    LOG(INFO)<<"End index: "<<init_static_interval.end_idx<<endl;
     Eigen::Matrix<T, 3, 1> acc_variance = dataVariance(acc_samples, init_static_interval);
     T norm_th = acc_variance.norm();
+
+    LOG(INFO)<<"Accelerometer's variance norm: "<<norm_th<<endl;
 
     T min_cost = std::numeric_limits<T>::max();
     int min_cost_th = -1;
@@ -187,17 +197,17 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
                                 interval_n_samples_, acc_use_means_);
 
         if (verbose_output_) {
-            cout << "Accelerometers calibration: extracted " << extracted_intervals.size()
+            LOG(INFO) << "Accelerometers calibration: extracted " << extracted_intervals.size()
                  << " intervals using threshold multiplier " << th_mult << " -> ";
         }
 
-        // Perform here a quality test
+// Perform here a quality test
         if (extracted_intervals.size() < min_num_intervals_) {
-            if (verbose_output_) cout << "Not enough intervals, calibration is not reliable" << endl;
+            if (verbose_output_) LOG(WARNING) << "Not enough intervals, calibration is not reliable" << endl;
             continue;
         }
 
-        if (verbose_output_) cout << "Trying calibrate... " << endl;
+        if (verbose_output_) LOG(INFO) << "Trying calibrate... " << endl;
 
         ceres::Problem problem;
         for (int i = 0; i < static_samples.size(); i++) {
@@ -224,7 +234,7 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
 
     if (min_cost_th < 0) {
         if (verbose_output_)
-            cout << "Accelerometers calibration: Can't obtain any calibratin with the current dataset" << endl;
+            LOG(ERROR) << "Accelerometers calibration: Can't obtain any calibratin with the current dataset" << endl;
         return false;
     }
 
@@ -241,15 +251,15 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
 
     calib_acc_samples_.reserve(n_samps);
 
-    // Calibrate the input accelerometer data with the obtained calibration
+// Calibrate the input accelerometer data with the obtained calibration
     for (int i = 0; i < n_samps; i++)
         calib_acc_samples_.push_back(acc_calib_.unbiasNormalize(acc_samples[i]));
 
     if (verbose_output_) {
-        Plot plot;
-        plot.plotIntervals(calib_acc_samples_, min_cost_static_intervals_);
+//        Plot plot;
+//        plot.plotIntervals(calib_acc_samples_, min_cost_static_intervals_);
 
-        cout << "Accelerometers calibration: Better calibration obtained using threshold multiplier " << min_cost_th
+        LOG(INFO) << "Accelerometers calibration: Better calibration obtained using threshold multiplier " << min_cost_th
              << " with residual " << min_cost << endl
              << acc_calib_ << endl
              << "Accelerometers calibration: inverse scale factors:" << endl
@@ -257,7 +267,7 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
              << 1.0 / acc_calib_.scaleY() << endl
              << 1.0 / acc_calib_.scaleZ() << endl;
 
-        waitForKey();
+//        waitForKey();
     }
 
     return true;
@@ -266,7 +276,7 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
 
 template<typename T>
 bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc_samples,
-                                                const vector<TriadData_<T> > &gyro_samples) {
+                                               const vector<TriadData_<T> > &gyro_samples) {
     if (!calibrateAcc(acc_samples))
         return false;
 
@@ -280,18 +290,18 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
     int n_static_pos = static_acc_means.size(), n_samps = gyro_samples.size();
 
-    // Compute the gyroscopes biases in the (static) initialization interval
+// Compute the gyroscopes biases in the (static) initialization interval
     DataInterval init_static_interval = DataInterval::initialInterval(gyro_samples, init_interval_duration_);
     Eigen::Matrix<T, 3, 1> gyro_bias = dataMean(gyro_samples, init_static_interval);
 
     gyro_calib_ = CalibratedTriad_<T>(0, 0, 0, 0, 0, 0,
-                                       1.0, 1.0, 1.0,
-                                       gyro_bias(0), gyro_bias(1), gyro_bias(2));
+                                      1.0, 1.0, 1.0,
+                                      gyro_bias(0), gyro_bias(1), gyro_bias(2));
 
 
-    // calibrated_gyro_samples_ already cleared in calibrateAcc()
+// calibrated_gyro_samples_ already cleared in calibrateAcc()
     calibrated_gyro_samples_.reserve(n_samps);
-    // Remove the bias
+// Remove the bias
     for (int i = 0; i < n_samps; i++)
         calibrated_gyro_samples_.push_back(gyro_calib_.unbias(gyro_samples[i]));
 
@@ -308,7 +318,7 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
     gyro_calib_params[7] = init_gyro_calib_.scaleY();
     gyro_calib_params[8] = init_gyro_calib_.scaleZ();
 
-    // Bias has been estimated and removed in the initialization period
+// Bias has been estimated and removed in the initialization period
     gyro_calib_params[9] = 0.0;
     gyro_calib_params[10] = 0.0;
     gyro_calib_params[11] = 0.0;
@@ -319,7 +329,7 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
         Eigen::Matrix<T, 3, 1> g_versor_pos0 = static_acc_means[i].data(),
                 g_versor_pos1 = static_acc_means[i + 1].data();
 
-        // calculate directions of gravity in the two static intervals
+// calculate directions of gravity in the two static intervals
         g_versor_pos0 /= g_versor_pos0.norm();
         g_versor_pos1 /= g_versor_pos1.norm();
 
@@ -327,8 +337,8 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
         T ts0 = calib_acc_samples_[extracted_intervals[i].end_idx].timestamp(),
                 ts1 = calib_acc_samples_[extracted_intervals[i + 1].start_idx].timestamp();
 
-        // Assume monotone signal time
-        // determine the start and end indices of the gyroscopes samples in the two static intervals
+// Assume monotone signal time
+// determine the start and end indices of the gyroscopes samples in the two static intervals
         for (int t_idx = 0; t_idx < n_samps; t_idx++) {
             if (gyro_idx0 < 0) { // first sample
                 if (calibrated_gyro_samples_[t_idx].timestamp() >= ts0) // rotation start time
@@ -350,7 +360,7 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
         ceres::CostFunction *cost_function =
                 MultiPosGyroResidual<T>::Create(g_versor_pos0, g_versor_pos1, calibrated_gyro_samples_,
-                                                 gyro_interval, gyro_dt_, optimize_gyro_bias_);
+                                                gyro_interval, gyro_dt_, optimize_gyro_bias_);
 
         problem.AddResidualBlock(cost_function, NULL /* squared loss */, gyro_calib_params.data());
 
@@ -364,26 +374,26 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
     ceres::Solve(options, &problem, &summary);
     gyro_calib_ = CalibratedTriad_<T>(gyro_calib_params[0],
-                                       gyro_calib_params[1],
-                                       gyro_calib_params[2],
-                                       gyro_calib_params[3],
-                                       gyro_calib_params[4],
-                                       gyro_calib_params[5],
-                                       gyro_calib_params[6],
-                                       gyro_calib_params[7],
-                                       gyro_calib_params[8],
-                                       gyro_bias(0) + gyro_calib_params[9],
-                                       gyro_bias(1) + gyro_calib_params[10],
-                                       gyro_bias(2) + gyro_calib_params[11]);
+                                      gyro_calib_params[1],
+                                      gyro_calib_params[2],
+                                      gyro_calib_params[3],
+                                      gyro_calib_params[4],
+                                      gyro_calib_params[5],
+                                      gyro_calib_params[6],
+                                      gyro_calib_params[7],
+                                      gyro_calib_params[8],
+                                      gyro_bias(0) + gyro_calib_params[9],
+                                      gyro_bias(1) + gyro_calib_params[10],
+                                      gyro_bias(2) + gyro_calib_params[11]);
 
-    // Calibrate the input gyroscopes data with the obtained calibration
+// Calibrate the input gyroscopes data with the obtained calibration
     for (int i = 0; i < n_samps; i++)
         calibrated_gyro_samples_.push_back(gyro_calib_.unbiasNormalize(gyro_samples[i]));
 
     if (verbose_output_) {
 
-        cout << summary.FullReport() << endl;
-        cout << "Gyroscopes calibration: residual " << summary.final_cost << endl
+        LOG(INFO) << summary.FullReport() << endl;
+        LOG(INFO) << "Gyroscopes calibration: residual " << summary.final_cost << endl
              << gyro_calib_ << endl
              << "Gyroscopes calibration: inverse scale factors:" << endl
              << 1.0 / gyro_calib_.scaleX() << endl
@@ -393,9 +403,3 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
     return true;
 }
-
-template
-class MultiPosCalibration_<double>;
-
-template
-class MultiPosCalibration_<float>;
