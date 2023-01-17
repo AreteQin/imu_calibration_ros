@@ -1,4 +1,4 @@
-I0108 12:15:31.584751 34723 calibration.cpp:262] Accelerometers calibration: Better calibration obtained using threshold multiplier 3 with residual 7.79511
+Accelerometers calibration: Better calibration obtained using threshold multiplier 3 with residual 7.79511
 Misalignment Matrix
 000000001 00.796743 0001.1954
 000000000 000000001 -0.753941
@@ -35,3 +35,41 @@ Gyroscopes calibration: inverse scale factors:
 14.7743
 203.563
 3.28074
+
+
+Simulation:
+Accelerometers calibration:
+Misalignment Matrix
+000000001 -0.355182 0-0.33298
+000000000 000000001 -0.446432
+0000000-0 000000000 000000001
+Scale Matrix
+0.268163 00000000 00000000
+00000000 0.258275 00000000
+00000000 00000000 0.245785
+Bias Vector
+-29.8281
+-28.4252
+-26.2715
+Accelerometers calibration: inverse scale factors:
+3.72908
+3.87184
+4.06859
+
+Gyroscopes calibration: residual 0.00448846
+Misalignment Matrix
+0000001 19.2489 180.092
+296.021 0000001 038.434
+331.159 0214.87 0000001
+Scale Matrix
+0.0263342 000000000 000000000
+000000000 0.0216272 000000000
+000000000 000000000 0.0341828
+Bias Vector
+0.00603591
+0.00596286
+0.00601029
+Gyroscopes calibration: inverse scale factors:
+37.9734
+46.2381
+29.2544

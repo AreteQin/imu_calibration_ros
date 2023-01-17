@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
+find_package(Sophus REQUIRED)
 find_package(Glog REQUIRED)
 #find_package(GLUT REQUIRED)
 
@@ -160,6 +161,7 @@ add_library(imu_tk STATIC
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/imu_calibration_ros_node.cpp)
 add_executable(test_imu_calib apps/test_imu_calib.cpp)
+add_executable(imu_simulator apps/imu_simulator.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -182,6 +184,11 @@ target_link_libraries(test_imu_calib
         ${Boost_LIBRARIES}
         ${CERES_LIBRARIES}
         ${GLUT_LIBRARY})
+
+target_link_libraries(imu_simulator
+        Sophus::Sophus
+        ${GLOG_LIBRARIES}
+        ${catkin_LIBRARIES})
 
 #############
 ## Install ##
