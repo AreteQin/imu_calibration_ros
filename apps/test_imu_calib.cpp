@@ -13,8 +13,8 @@
 #include <rosbag/view.h>
 #include <sensor_msgs/Imu.h>
 
-#include "base.h"
-#include "calibration.h"
+#include "../src/base.h"
+#include "../src/calibration.h"
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "allan_variance_ros");

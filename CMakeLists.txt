@@ -142,8 +142,8 @@ include_directories(
 #   src/${PROJECT_NAME}/imu_calibration_ros.cpp
 # )
 add_library(imu_tk STATIC
-        src/base.cpp
-#        include/base.h
+#        src/base.cpp
+        src/base.h
 #        include/calibration.h
         src/calibration.cpp
         src/filters.cpp

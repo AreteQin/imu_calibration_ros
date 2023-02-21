@@ -39,11 +39,9 @@ using namespace imu_tk;
 using namespace Eigen;
 using namespace std;
 
-template
-class MultiPosCalibration_<double>;
+template class MultiPosCalibration_<double>;
 
-template
-class MultiPosCalibration_<float>;
+template class MultiPosCalibration_<float>;
 
 template<typename T1>
 struct MultiPosAccResidual {
@@ -155,7 +153,7 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
 
     min_cost_static_intervals_.clear();
     calib_acc_samples_.clear();
-    calibrated_gyro_samples_.clear();
+    calib_gyro_samples_.clear();
 
     int n_samps = acc_samples.size();
     LOG(INFO) << "Accelerometers calibration: " << n_samps << " measurements" << endl;
@@ -300,10 +298,10 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
 
 // calibrated_gyro_samples_ already cleared in calibrateAcc()
-    calibrated_gyro_samples_.reserve(n_samps);
+    calib_gyro_samples_.reserve(n_samps);
 // Remove the bias
     for (int i = 0; i < n_samps; i++)
-        calibrated_gyro_samples_.push_back(gyro_calib_.unbias(gyro_samples[i]));
+        calib_gyro_samples_.push_back(gyro_calib_.unbias(gyro_samples[i]));
 
     std::vector<double> gyro_calib_params(12);
 
@@ -341,10 +339,10 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 // determine the start and end indices of the gyroscopes samples in the two static intervals
         for (int t_idx = 0; t_idx < n_samps; t_idx++) {
             if (gyro_idx0 < 0) { // first sample
-                if (calibrated_gyro_samples_[t_idx].timestamp() >= ts0) // rotation start time
+                if (calib_gyro_samples_[t_idx].timestamp() >= ts0) // rotation start time
                     gyro_idx0 = t_idx;
             } else { // not first sample
-                if (calibrated_gyro_samples_[t_idx].timestamp() >= ts1) { // rotation end time
+                if (calib_gyro_samples_[t_idx].timestamp() >= ts1) { // rotation end time
                     gyro_idx1 = t_idx - 1;
                     break;
                 }
@@ -359,7 +357,7 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
         DataInterval gyro_interval(gyro_idx0, gyro_idx1);
 
         ceres::CostFunction *cost_function =
-                MultiPosGyroResidual<T>::Create(g_versor_pos0, g_versor_pos1, calibrated_gyro_samples_,
+                MultiPosGyroResidual<T>::Create(g_versor_pos0, g_versor_pos1, calib_gyro_samples_,
                                                 gyro_interval, gyro_dt_, optimize_gyro_bias_);
 
         problem.AddResidualBlock(cost_function, NULL /* squared loss */, gyro_calib_params.data());
@@ -388,7 +386,7 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
 // Calibrate the input gyroscopes data with the obtained calibration
     for (int i = 0; i < n_samps; i++)
-        calibrated_gyro_samples_.push_back(gyro_calib_.unbiasNormalize(gyro_samples[i]));
+        calib_gyro_samples_.push_back(gyro_calib_.unbiasNormalize(gyro_samples[i]));
 
     if (verbose_output_) {
 

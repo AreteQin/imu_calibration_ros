@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>imu_calibration_ros</name>
+  <version>0.0.1</version>
+  <description>calibrate MEMS-based inertial navigation units using ROS bag files</description>
+
+  <maintainer email="qinqiaomeng@outlook.com">Qiaomeng Qin</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">https://github.com/AreteQin/imu_calibration_ros</url>
+
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+
+  <build_export_depend>geometry_msgs</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+
+  <export>
+
+  </export>
+</package>
