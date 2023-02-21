@@ -17,7 +17,7 @@
 #include "../src/calibration.h"
 
 int main(int argc, char **argv) {
-    ros::init(argc, argv, "allan_variance_ros");
+    ros::init(argc, argv, "imu_calibration_ros");
     ros::NodeHandle nodeHandle;
     std::string bag_file_dir;
     std::string imu_topic = "/qcar_imu/raw";
