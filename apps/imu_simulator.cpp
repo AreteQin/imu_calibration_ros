@@ -94,7 +94,7 @@ public:
 
     virtual ~ImuSimulator() { bag_output_.close(); }
 
-    void run() {
+    void GenerateDataWithIntervals() {
         ROS_INFO_STREAM("Generating IMU data ...");
 
         double dt = 1 / update_rate_;
@@ -233,6 +233,49 @@ public:
         ROS_INFO_STREAM("Finished generating data. ");
     }
 
+    void GenerateStaticData() {
+        ROS_INFO_STREAM("Generating IMU data ...");
+
+        double dt = 1 / update_rate_;
+
+        // clang-format off
+        ros::Time start_time(1.0);
+        Vec3d accelerometer_bias = Vec3d::Constant(accelerometer_bias_init_);
+        Vec3d gyroscope_bias = Vec3d::Constant(gyroscope_bias_init_);
+        Vec3d accelerometer_real = {0, 0, 9.81};
+        Vec3d gyroscope_real = Vec3d::Zero();
+
+        for (int64_t i = 0; i < init_static_period_ * update_rate_; ++i) {
+
+            // Break if requested by user
+            if (!ros::ok()) {
+                break;
+            }
+
+            // Reference: https://github.com/ethz-asl/kalibr/wiki/IMU-Noise-Model
+            accelerometer_bias += RandomNormalDistributionVector(accelerometer_random_walk_) * sqrt(dt);
+            gyroscope_bias += RandomNormalDistributionVector(gyroscope_random_walk_) * sqrt(dt);
+
+            Vec3d acc_measure = accelerometer_real + accelerometer_bias +
+                                RandomNormalDistributionVector(accelerometer_noise_density_) / sqrt(dt);
+            Vec3d gyro_measure = gyroscope_real + gyroscope_bias +
+                                 RandomNormalDistributionVector(gyroscope_noise_density_) / sqrt(dt);
+
+            sensor_msgs::Imu msg;
+            msg.header.stamp = start_time + ros::Duration(1, 0) * (i / update_rate_);
+            msg.header.seq = i;
+            FillROSVector3d(acc_measure, msg.linear_acceleration);
+            FillROSVector3d(gyro_measure, msg.angular_velocity);
+
+//            FillROSVector3d(accelerometer_real, msg.linear_acceleration);
+//            FillROSVector3d(gyroscope_real, msg.angular_velocity);
+
+            bag_output_.write(rostopic_, msg.header.stamp, msg);
+        }
+
+        ROS_INFO_STREAM("Finished generating data. ");
+    }
+
 private:
     // ROS
     rosbag::Bag bag_output_;
@@ -249,7 +292,7 @@ private:
     std::string rostopic_ = "/qcar_imu/raw";
     double update_rate_ = 2500;
 
-    double init_static_period_ = 50;
+    double init_static_period_ = 10800;
     double static_interval_time_ = 4;
     uint num_interval_ = 30;
 };
@@ -274,7 +317,8 @@ int main(int argc, char **argv) {
 
     ImuSimulator simulator(rosbag_filename);
     ROS_INFO_STREAM("IMU simulator constructed");
-    simulator.run();
+//    simulator.GenerateDataWithIntervals();
+    simulator.GenerateStaticData();
 
     double durationTime = (std::clock() - start) / (double) CLOCKS_PER_SEC;
     ROS_INFO("Total computation time: %f s", durationTime);

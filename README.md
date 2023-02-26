@@ -3,7 +3,9 @@
 The C++ IMU-TK-ROS Library is forked from [
 imu_tk](https://github.com/Kyle-ak/imu_tk)
 to calibrate MEMS-based inertial navigation units using 
-ROS bag files. QT4 is not required anymore.
+ROS bag files. QT4 is not required anymore. You can generate 
+two types of simulation data: 1) IMU static data and 2) IMU data 
+intervals.
 
 ## References ##
 

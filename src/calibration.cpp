@@ -39,9 +39,11 @@ using namespace imu_tk;
 using namespace Eigen;
 using namespace std;
 
-template class MultiPosCalibration_<double>;
+template
+class MultiPosCalibration_<double>;
 
-template class MultiPosCalibration_<float>;
+template
+class MultiPosCalibration_<float>;
 
 template<typename T1>
 struct MultiPosAccResidual {
@@ -159,12 +161,12 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
     LOG(INFO) << "Accelerometers calibration: " << n_samps << " measurements" << endl;
 
     DataInterval init_static_interval = DataInterval::initialInterval(acc_samples, init_interval_duration_);
-    LOG(INFO)<<"Start index: "<<init_static_interval.start_idx<<endl;
-    LOG(INFO)<<"End index: "<<init_static_interval.end_idx<<endl;
+    LOG(INFO) << "Start index: " << init_static_interval.start_idx << endl;
+    LOG(INFO) << "End index: " << init_static_interval.end_idx << endl;
     Eigen::Matrix<T, 3, 1> acc_variance = dataVariance(acc_samples, init_static_interval);
     T norm_th = acc_variance.norm();
 
-    LOG(INFO)<<"Accelerometer's variance norm: "<<norm_th<<endl;
+    LOG(INFO) << "Accelerometer's variance norm: " << norm_th << endl;
 
     T min_cost = std::numeric_limits<T>::max();
     int min_cost_th = -1;
@@ -196,7 +198,7 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
 
         if (verbose_output_) {
             LOG(INFO) << "Accelerometers calibration: extracted " << extracted_intervals.size()
-                 << " intervals using threshold multiplier " << th_mult << " -> ";
+                      << " intervals using threshold multiplier " << th_mult << " -> ";
         }
 
 // Perform here a quality test
@@ -257,13 +259,14 @@ bool MultiPosCalibration_<T>::calibrateAcc(const std::vector<TriadData_<T> > &ac
 //        Plot plot;
 //        plot.plotIntervals(calib_acc_samples_, min_cost_static_intervals_);
 
-        LOG(INFO) << "Accelerometers calibration: Better calibration obtained using threshold multiplier " << min_cost_th
-             << " with residual " << min_cost << endl
-             << acc_calib_ << endl
-             << "Accelerometers calibration: inverse scale factors:" << endl
-             << 1.0 / acc_calib_.scaleX() << endl
-             << 1.0 / acc_calib_.scaleY() << endl
-             << 1.0 / acc_calib_.scaleZ() << endl;
+        LOG(INFO) << "Accelerometers calibration: Better calibration obtained using threshold multiplier "
+                  << min_cost_th
+                  << " with residual " << min_cost << endl
+                  << acc_calib_ << endl
+                  << "Accelerometers calibration: inverse scale factors:" << endl
+                  << 1.0 / acc_calib_.scaleX() << endl
+                  << 1.0 / acc_calib_.scaleY() << endl
+                  << 1.0 / acc_calib_.scaleZ() << endl;
 
 //        waitForKey();
     }
@@ -278,7 +281,7 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
     if (!calibrateAcc(acc_samples))
         return false;
 
-    cout << "Gyroscopes calibration: calibrating..." << endl;
+    LOG(INFO) << "Gyroscopes calibration: calibrating...";
 
     std::vector<TriadData_<T> > static_acc_means;
     std::vector<DataInterval> extracted_intervals;
@@ -392,11 +395,11 @@ bool MultiPosCalibration_<T>::calibrateAccGyro(const vector<TriadData_<T> > &acc
 
         LOG(INFO) << summary.FullReport() << endl;
         LOG(INFO) << "Gyroscopes calibration: residual " << summary.final_cost << endl
-             << gyro_calib_ << endl
-             << "Gyroscopes calibration: inverse scale factors:" << endl
-             << 1.0 / gyro_calib_.scaleX() << endl
-             << 1.0 / gyro_calib_.scaleY() << endl
-             << 1.0 / gyro_calib_.scaleZ() << endl;
+                  << gyro_calib_ << endl
+                  << "Gyroscopes calibration: inverse scale factors:" << endl
+                  << 1.0 / gyro_calib_.scaleX() << endl
+                  << 1.0 / gyro_calib_.scaleY() << endl
+                  << 1.0 / gyro_calib_.scaleZ() << endl;
     }
 
     return true;
