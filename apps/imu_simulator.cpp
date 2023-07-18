@@ -281,9 +281,13 @@ private:
     rosbag::Bag bag_output_;
 
 private:
-    double accelerometer_noise_density_ = 0.0025019929573561175;
-    double accelerometer_random_walk_ = 6.972435158192731e-05;
-    double accelerometer_bias_init_ = 0.007;
+    double accelerometer_noise_density_ = 0.0025019929573561175; // unit: m/s/sqrt(s)
+    double accelerometer_random_walk_ = 6.972435158192731e-05; // unit: m/s^2/sqrt(s)
+    double accelerometer_bias_init_ = 0.007; //
+
+//    double accelerometer_noise_density_ = 0.000025019929573561175; // unit: m/s/sqrt(s)
+//    double accelerometer_random_walk_ = 6.972435158192731e-05; // unit: m/s^2/sqrt(s)
+//    double accelerometer_bias_init_ = 0.007; //
 
     double gyroscope_noise_density_ = 0.0001888339269965301;
     double gyroscope_random_walk_ = 2.5565313322052523e-06;
@@ -292,7 +296,7 @@ private:
     std::string rostopic_ = "/qcar_imu/raw";
     double update_rate_ = 2500;
 
-    double init_static_period_ = 10800;
+    double init_static_period_ = 5000;
     double static_interval_time_ = 4;
     uint num_interval_ = 30;
 };
